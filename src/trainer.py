@@ -70,10 +70,11 @@ class Trainer:
         pickle.dump(self.model, open(path, 'wb'))
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(prog='BikeSharingDemandRegression')
     parser.add_argument("--train", default="../data/train.csv")
     parser.add_argument("--test", default="../data/test.csv")
+    parser.add_argument("--test_preds_out")
     parser.add_argument("--model_save_path")
     args = parser.parse_args()
 
@@ -98,4 +99,12 @@ if __name__ == '__main__':
     logging.info(f"Train RMSE: {trainer.score(X_train, y_train, score_function)}")
     logging.info(f"Val RMSE: {trainer.score(X_val, y_val, score_function)}")
 
+    test_predictions = trainer.predict(test_df)
+
+    pd.DataFrame({"test_preds": test_predictions}).to_csv(args.test_preds_out, header=True, index=False)
+
     trainer.save_model(args.model_save_path)
+
+
+if __name__ == '__main__':
+    main()
