@@ -11,7 +11,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-from preprocess import preprocess, split_for_validation, CAT_FEATURES
+from .preprocess import preprocess, split_for_validation, CAT_FEATURES
 
 
 class Trainer:
@@ -19,21 +19,31 @@ class Trainer:
     Class for training and predicting using sklearn models
     """
 
-    def __init__(self, model):
+    def __init__(self, model, train_path: str, test_path: str):
         self.model = model
+
+        self.train_df = preprocess(pd.read_csv(train_path, parse_dates=['datetime']), is_train=True)
+        self.test_df = preprocess(pd.read_csv(test_path, parse_dates=['datetime']), is_train=False)
+
         self.is_trained = False
 
-    def fit(self, X: DataFrame, y: Series):
+    def fit(self, with_validation=False):
         """
         Fits the model
-        :param X: DataFrame
-        :param y: Series
-        :return: None
         """
 
         logging.info("Training...")
-        self.model.fit(X, y)
+        if with_validation:
+            X_train, y_train, X_val, y_val = split_for_validation(self.train_df)
+        else:
+            X_train, y_train = self.train_df.drop('count', axis=1), self.train_df['count']
+            X_val, y_val = None, None
+
+        self.model.fit(X_train, y_train)
         self.is_trained = True
+
+        return self.score(X_train, y_train, mean_squared_error), \
+               (self.score(X_val, y_val, mean_squared_error) if with_validation else None)
 
     def predict(self, X: DataFrame) -> np.ndarray:
         """
@@ -69,6 +79,46 @@ class Trainer:
 
         pickle.dump(self.model, open(path, 'wb'))
 
+    def get_train(self):
+        """
+        Returns train df
+        :return: DataFrame
+        """
+        return self.train_df
+
+    def get_test(self):
+        """
+        Returns test df
+        :return: DataFrame
+        """
+        return self.test_df
+
+    @staticmethod
+    def default_trainer(train_path: str, test_path: str) -> 'Trainer':
+        """
+
+        :param train_path:
+        :param test_path:
+        :return: Trainer - trainer with RandomForestClassifier
+        """
+        model = Pipeline([
+            ('onehot_encoder', make_column_transformer((OneHotEncoder(), CAT_FEATURES), remainder='passthrough')),
+            ('regressor', RandomForestRegressor())
+        ])
+        return Trainer(model, train_path, test_path)
+
+    @staticmethod
+    def from_pretrained(model, train_path: str, test_path: str) -> 'Trainer':
+        """
+
+        :param train_path:
+        :param test_path:
+        :return: Trainer - trainer with pretrained model
+        """
+        trainer = Trainer(model, train_path, test_path)
+        trainer.is_trained = True
+        return trainer
+
 
 def main():
     parser = argparse.ArgumentParser(prog='BikeSharingDemandRegression')
@@ -78,28 +128,12 @@ def main():
     parser.add_argument("--model_save_path")
     args = parser.parse_args()
 
-    train_df = pd.read_csv(args.train, parse_dates=['datetime'])
-    test_df = pd.read_csv(args.test, parse_dates=['datetime'])
+    trainer = Trainer.default_trainer(args.train, args.test)
+    train_mse, val_mse = trainer.fit(with_validation=True)
 
-    train_df = preprocess(train_df, is_train=True)
-    test_df = preprocess(test_df, is_train=False)
+    logging.info(f"Train MSE {train_mse} | Val MSE {val_mse}")
 
-    X_train, y_train, X_val, y_val = split_for_validation(train_df)
-
-    model = Pipeline([
-        ('onehot_encoder', make_column_transformer((OneHotEncoder(), CAT_FEATURES), remainder='passthrough')),
-        ('regressor', RandomForestRegressor())
-    ])
-
-    trainer = Trainer(model)
-    trainer.fit(X_train, y_train)
-
-    score_function = lambda y, pred: np.sqrt(mean_squared_error(y, pred))
-
-    logging.info(f"Train RMSE: {trainer.score(X_train, y_train, score_function)}")
-    logging.info(f"Val RMSE: {trainer.score(X_val, y_val, score_function)}")
-
-    test_predictions = trainer.predict(test_df)
+    test_predictions = trainer.predict(trainer.get_test())
 
     pd.DataFrame({"test_preds": test_predictions}).to_csv(args.test_preds_out, header=True, index=False)
 
