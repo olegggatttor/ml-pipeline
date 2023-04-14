@@ -34,10 +34,12 @@ class Trainer:
 
         logging.info("Training...")
         if with_validation:
-            X_train, y_train, X_val, y_val = split_for_validation(self.train_df)
+            X_train, X_val, y_train, y_val = split_for_validation(self.train_df)
         else:
             X_train, y_train = self.train_df.drop('count', axis=1), self.train_df['count']
             X_val, y_val = None, None
+
+        print(list(map(len, [X_train, y_train, X_val, y_val])))
 
         self.model.fit(X_train, y_train)
         self.is_trained = True

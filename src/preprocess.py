@@ -31,7 +31,7 @@ def preprocess(df: DataFrame, *, is_train: bool) -> DataFrame:
     return df
 
 
-def split_for_validation(train_df: DataFrame, split_seed=42) -> tp.Tuple[DataFrame, Series, DataFrame, Series]:
+def split_for_validation(train_df: DataFrame, split_seed=42) -> tp.Tuple[DataFrame, DataFrame, Series, Series]:
     """
     Splits train datafram into train and validation dataframes
 
@@ -39,7 +39,7 @@ def split_for_validation(train_df: DataFrame, split_seed=42) -> tp.Tuple[DataFra
     :param split_seed: int - seed for train_test_split
     :return: X_train, y_train, X_val, y_val - 4 dataframes for train and validation
     """
-    X = train_df.drop(['count'], axis=1)
+    X = train_df.drop('count', axis=1)
     y = train_df['count']
     return train_test_split(X, y, test_size=0.2, shuffle=True, random_state=split_seed)
 

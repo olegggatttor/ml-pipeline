@@ -2,13 +2,12 @@ import unittest
 import configparser
 from pandas import DataFrame
 from ..trainer import Trainer
-import os
 
 config = configparser.ConfigParser()
-config.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.ini"))
+config.read("config.ini")
 
 
-class TestDataMaker(unittest.TestCase):
+class TestTraining(unittest.TestCase):
 
     def setUp(self) -> None:
         self.trainer = Trainer.default_trainer(config['unit_testing']['train_path'],
