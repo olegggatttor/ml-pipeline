@@ -1,0 +1,5 @@
+[core]
+    remote = vkcloud
+['remote "vkcloud"']
+    url = s3://bike-sharing-demand
+    acl = bucket-owner-full-control
