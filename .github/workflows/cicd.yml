@@ -46,5 +46,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Pull and run tests
-        run: docker-compose -f "docker-compose.yml" up
+        name: Pull with compose
+        run: docker-compose pull
+      -
+        name: Run tests
+        run: docker-compose up --abort-on-container-exit
