@@ -1,4 +1,5 @@
 import argparse
+import configparser
 from pandas import DataFrame, Series
 import numpy as np
 import pandas as pd
@@ -13,6 +14,8 @@ from sklearn.preprocessing import OneHotEncoder
 
 from .preprocess import preprocess, split_for_validation, CAT_FEATURES
 
+config = configparser.ConfigParser()
+config.read("config.ini")
 
 class Trainer:
     """
@@ -103,7 +106,11 @@ class Trainer:
         """
         model = Pipeline([
             ('onehot_encoder', make_column_transformer((OneHotEncoder(), CAT_FEATURES), remainder='passthrough')),
-            ('regressor', RandomForestRegressor())
+            ('regressor', RandomForestRegressor(
+                n_estimators=int(config['model.random_forest.hyper_params']['n_estimators']),
+                min_samples_split=int(config['model.random_forest.hyper_params']['min_samples_split']),
+                min_samples_leaf=int(config['model.random_forest.hyper_params']['min_samples_leaf'])
+            ))
         ])
         return Trainer(model, train_path, test_path)
 
