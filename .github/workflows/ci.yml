@@ -25,13 +25,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: iterative/setup-dvc@v1
       -
         name: Pull data from DVC
-        uses: iterative/setup-dvc@v1
         run: |
           dvc remote modify vkcloud endpointurl ${{ secrets.VKCLOUD_ENDPOINT_URL }} && \
           dvc remote modify vkcloud access_key_id ${{ secrets.VKCLOUD_ACCESS_KEY_ID }} && \
-          dvc remote modify vkcloud secret_access_key ${{ secrets.VKCLOUD_SECERT_ACCESS_KEY }} && \
+          dvc remote modify vkcloud secret_access_key ${{ secrets.VKCLOUD_SECRET_ACCESS_KEY }} && \
           dvc pull
       -
         name: Build and push
