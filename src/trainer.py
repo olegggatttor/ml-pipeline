@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import logging
+import sys
 
 from sklearn.compose import make_column_transformer
 from sklearn.ensemble import RandomForestRegressor
@@ -12,10 +13,13 @@ from sklearn.metrics import mean_squared_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-from .preprocess import preprocess, split_for_validation, CAT_FEATURES
+from preprocess import preprocess, split_for_validation, CAT_FEATURES
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 config = configparser.ConfigParser()
 config.read("config.ini")
+
 
 class Trainer:
     """
@@ -129,8 +133,8 @@ class Trainer:
 
 def main():
     parser = argparse.ArgumentParser(prog='BikeSharingDemandRegression')
-    parser.add_argument("--train", default="../data/train.csv")
-    parser.add_argument("--test", default="../data/test.csv")
+    parser.add_argument("--train", default="data/train.csv")
+    parser.add_argument("--test", default="data/test.csv")
     parser.add_argument("--test_preds_out")
     parser.add_argument("--model_save_path")
     args = parser.parse_args()

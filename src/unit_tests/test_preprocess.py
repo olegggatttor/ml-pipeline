@@ -1,7 +1,11 @@
 import unittest
 import configparser
 from pandas import DataFrame
-from ..trainer import Trainer
+import sys
+import os
+
+sys.path.insert(1, os.path.join(os.getcwd(), "src"))
+from trainer import Trainer
 
 config = configparser.ConfigParser()
 config.read("config.ini")
