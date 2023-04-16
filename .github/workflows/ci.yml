@@ -1,4 +1,4 @@
-name: Docker Image CI/CD
+name: CI
 
 on:
   push:
@@ -26,28 +26,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Pull data from DVC
+        uses: iterative/setup-dvc@v1
+        run: |
+          dvc remote modify vkcloud endpointurl ${{ secrets.VKCLOUD_ENDPOINT_URL }} && \
+          dvc remote modify vkcloud access_key_id ${{ secrets.VKCLOUD_ACCESS_KEY_ID }} && \
+          dvc remote modify vkcloud secret_access_key ${{ secrets.VKCLOUD_SECERT_ACCESS_KEY }} && \
+          dvc pull
+      -
         name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: olegggatttor/ml-pipe-bike-sharing:latest
-  cd:
-    needs: [ci]
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v3
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Pull with compose
-        run: docker-compose pull
-      -
-        name: Run tests
-        run: docker-compose up --abort-on-container-exit
