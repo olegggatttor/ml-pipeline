@@ -10,10 +10,11 @@ def main():
     parser.add_argument("--from_pretrained", default="data/r_forest.pickle")
     args = parser.parse_args()
 
-    trainer = Trainer.from_pretrained(pickle.load(args.from_pretrained), args.data, args.data)
-    test_predictions = trainer.predict(trainer.get_test())
+    with open(args.from_pretrained, 'rb') as f:
+        trainer = Trainer.from_pretrained(pickle.load(f), args.data, args.data)
+        test_predictions = trainer.predict(trainer.get_test())
 
-    assert np.all(test_predictions == trainer.get_test()['count'])
+        assert np.all(test_predictions == trainer.get_test()['count'])
 
 
 if __name__ == '__main__':
