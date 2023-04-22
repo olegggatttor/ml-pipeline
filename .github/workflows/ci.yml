@@ -34,6 +34,9 @@ jobs:
           dvc remote modify vkcloud secret_access_key ${{ secrets.VKCLOUD_SECRET_ACCESS_KEY }} && \
           dvc pull
       -
+        name: Train model
+        run: python src/trainer.py --test_preds_out=data/preds.csv --model_save_path=data/r_forest.pickle
+      -
         name: Build and push
         uses: docker/build-push-action@v4
         with:

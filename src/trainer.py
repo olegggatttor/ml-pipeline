@@ -135,6 +135,7 @@ def main():
     parser = argparse.ArgumentParser(prog='BikeSharingDemandRegression')
     parser.add_argument("--train", default="data/train.csv")
     parser.add_argument("--test", default="data/test.csv")
+    parser.add_argument("--from_pretrained", default="data/test.csv")
     parser.add_argument("--test_preds_out")
     parser.add_argument("--model_save_path")
     args = parser.parse_args()
