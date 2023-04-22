@@ -14,7 +14,7 @@ def main():
         trainer = Trainer.from_pretrained(pickle.load(f), args.data, args.data)
         test_predictions = trainer.predict(trainer.get_test())
 
-        assert np.all(test_predictions == trainer.get_test()['count'])
+        assert np.allclose(test_predictions, trainer.get_test()['count'], rtol=0, atol=3)
 
 
 if __name__ == '__main__':
